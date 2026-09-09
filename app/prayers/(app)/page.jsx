@@ -1,19 +1,19 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { listPrayersAction, listCategoriesAction, isOwnerAction } from './actions';
-import { CategoryFilter } from './components/category-filter';
-import { PrayerCard } from './components/prayer-card';
-import { ShareLinkBox } from './components/share-link-box';
-import { groupByDate, formatDateLabel } from './constants';
+import { listPrayersAction, listCategoriesAction, currentUserAction } from '../actions';
+import { CategoryFilter } from '../components/category-filter';
+import { PrayerCard } from '../components/prayer-card';
+import { EditableTitle } from '../components/editable-title';
+import { groupByDate, formatDateLabel, formatDateCompact, dateKey } from '../constants';
 
 export const metadata = { title: '기도제목 노트' };
 
 export default async function PrayersHomePage({ searchParams }) {
     const params = await searchParams;
-    const [prayers, categories, isOwner] = await Promise.all([
+    const [prayers, categories, user] = await Promise.all([
         listPrayersAction(),
         listCategoriesAction(),
-        isOwnerAction()
+        currentUserAction()
     ]);
 
     const selected = (params?.category || '').split(',').filter(Boolean);
@@ -25,17 +25,22 @@ export default async function PrayersHomePage({ searchParams }) {
         <div className="flex flex-col gap-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                    <h1>기도제목 노트</h1>
+                    <EditableTitle initialTitle={user.title} />
                     <p className="mt-1 text-sm text-neutral-400">
                         총 {prayers.length}개의 기도제목 · 응답 {answeredCount}개
                     </p>
                 </div>
-                <Link href="/prayers/new" className="btn">
-                    + 새 기도제목
-                </Link>
+                <div className="text-right">
+                    <p className="text-xs italic text-neutral-500">
+                        오늘 · {formatDateCompact(dateKey(new Date().toISOString()))}
+                    </p>
+                    <p className="text-xs italic text-neutral-600">시작일 · {formatDateCompact(dateKey(user.startedAt))}</p>
+                </div>
             </div>
 
-            <ShareLinkBox />
+            <Link href="/prayers/new" className="btn self-start">
+                + 새 기도제목
+            </Link>
 
             <Suspense>
                 <CategoryFilter categories={categories} />
@@ -49,7 +54,7 @@ export default async function PrayersHomePage({ searchParams }) {
                         <h3 className="mb-3 text-neutral-300">{formatDateLabel(date)}</h3>
                         <div className="flex flex-col gap-3">
                             {items.map((prayer) => (
-                                <PrayerCard key={prayer.id} prayer={prayer} isOwner={isOwner} />
+                                <PrayerCard key={prayer.id} prayer={prayer} />
                             ))}
                         </div>
                     </section>

@@ -1,5 +1,5 @@
-import { listPrayersAction, listCategoriesAction } from '../actions';
-import { categoryStyle, formatDateTime } from '../constants';
+import { listPrayersAction, listCategoriesAction } from '../../actions';
+import { categoryStyle, formatDateTime } from '../../constants';
 
 export const metadata = { title: '대시보드 | 기도제목 노트' };
 
@@ -21,6 +21,16 @@ export default async function DashboardPage() {
     const recentAnswered = [...answered]
         .sort((a, b) => new Date(b.answeredAt) - new Date(a.answeredAt))
         .slice(0, 8);
+
+    const needsPrayer = prayers
+        .filter((p) => !p.answered)
+        .slice()
+        .sort((a, b) => {
+            const diff = (a.prayerCount || 0) - (b.prayerCount || 0);
+            if (diff !== 0) return diff;
+            return new Date(a.createdAt) - new Date(b.createdAt);
+        })
+        .slice(0, 6);
 
     return (
         <div className="flex flex-col gap-8">
@@ -76,6 +86,30 @@ export default async function DashboardPage() {
                                 {prayer.answerContent && (
                                     <p className="text-sm whitespace-pre-wrap text-primary">💬 {prayer.answerContent}</p>
                                 )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </section>
+
+            <section>
+                <h3 className="mb-4">기도가 더 필요한 기도제목</h3>
+                {!needsPrayer.length && (
+                    <p className="text-sm text-neutral-500">아직 응답을 기다리는 기도제목이 없어요.</p>
+                )}
+                <div className="flex flex-col gap-3">
+                    {needsPrayer.map((prayer) => {
+                        const style = categoryStyle(prayer.category);
+                        return (
+                            <div key={prayer.id} className="p-4 rounded-lg bg-white/5 ring-1 ring-white/10">
+                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                    <span className={`px-2 py-0.5 text-xs rounded-full ${style.badge}`}>{prayer.category}</span>
+                                    <span className="text-xs text-neutral-400">{formatDateTime(prayer.createdAt)}</span>
+                                </div>
+                                <p className="mb-2 text-sm text-neutral-300 whitespace-pre-wrap">{prayer.content}</p>
+                                <p className="text-xs font-bold text-amber-400">
+                                    🙏 기도했어요 {prayer.prayerCount || 0}회
+                                </p>
                             </div>
                         );
                     })}

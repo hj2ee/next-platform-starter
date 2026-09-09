@@ -36,6 +36,11 @@ export function formatDateLabel(key) {
     return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${WEEKDAYS[d.getDay()]})`;
 }
 
+export function formatDateCompact(key) {
+    const d = new Date(`${key}T00:00:00`);
+    return `${d.getMonth() + 1}월 ${d.getDate()}일 (${WEEKDAYS[d.getDay()]})`;
+}
+
 export function formatDateTime(iso) {
     const d = new Date(iso);
     const hours24 = d.getHours();

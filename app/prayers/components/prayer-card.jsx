@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { updatePrayerAnswerAction, incrementPrayerCountAction, deletePrayerAction } from '../actions';
 import { categoryStyle, formatDateTime } from '../constants';
 
-export function PrayerCard({ prayer, isOwner }) {
+export function PrayerCard({ prayer }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [editingAnswer, setEditingAnswer] = useState(false);
@@ -17,7 +17,9 @@ export function PrayerCard({ prayer, isOwner }) {
 
     function toggleAnswered(next) {
         setAnswered(next);
-        if (!next) {
+        if (next) {
+            setEditingAnswer(true);
+        } else {
             setAnswerContent('');
             setEditingAnswer(false);
         }
@@ -64,15 +66,11 @@ export function PrayerCard({ prayer, isOwner }) {
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <div className="flex flex-wrap items-center gap-2">
                     <span className={`px-2 py-0.5 text-xs rounded-full ${style.badge}`}>{prayer.category}</span>
-                    <span className="text-xs text-neutral-400">
-                        {prayer.authorType === 'visitor' ? `${prayer.authorName} 님` : '나'} · {formatDateTime(prayer.createdAt)}
-                    </span>
+                    <span className="text-xs text-neutral-400">{formatDateTime(prayer.createdAt)}</span>
                 </div>
-                {isOwner && (
-                    <button onClick={remove} disabled={isPending} className="text-xs text-neutral-500 hover:text-rose-400">
-                        삭제
-                    </button>
-                )}
+                <button onClick={remove} disabled={isPending} className="text-xs text-neutral-500 hover:text-rose-400">
+                    삭제
+                </button>
             </div>
 
             <p className="mb-3 whitespace-pre-wrap">{prayer.content}</p>
@@ -86,34 +84,25 @@ export function PrayerCard({ prayer, isOwner }) {
                     🙏 기도했어요 <span className="font-bold">{prayerCount}</span>
                 </button>
 
-                {isOwner ? (
-                    <label className="inline-flex items-center gap-1.5 text-xs cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={answered}
-                            disabled={isPending}
-                            onChange={(e) => {
-                                if (e.target.checked) {
-                                    startEditing();
-                                }
-                                toggleAnswered(e.target.checked);
-                            }}
-                            className="w-4 h-4 accent-primary"
-                        />
-                        응답 받음
-                    </label>
-                ) : (
-                    answered && <span className="text-xs text-primary">✓ 응답 받음</span>
-                )}
+                <label className="inline-flex items-center gap-1.5 text-xs cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={answered}
+                        disabled={isPending}
+                        onChange={(e) => toggleAnswered(e.target.checked)}
+                        className="w-4 h-4 accent-primary"
+                    />
+                    응답 받음
+                </label>
 
-                {isOwner && answered && !editingAnswer && (
+                {answered && !editingAnswer && (
                     <button onClick={startEditing} className="text-xs underline text-neutral-400">
-                        응답 내용 수정
+                        {answerContent ? '응답 내용 수정' : '응답 내용 적기'}
                     </button>
                 )}
             </div>
 
-            {isOwner && editingAnswer && (
+            {answered && editingAnswer && (
                 <div className="flex flex-col gap-2 p-3 mt-3 rounded-md bg-neutral-900 ring-1 ring-neutral-700">
                     <textarea
                         value={draft}

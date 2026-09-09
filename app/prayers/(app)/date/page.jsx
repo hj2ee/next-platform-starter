@@ -1,13 +1,13 @@
 import Link from 'next/link';
-import { listPrayersAction, isOwnerAction } from '../actions';
-import { PrayerCard } from '../components/prayer-card';
-import { groupByDate, formatDateLabel } from '../constants';
+import { listPrayersAction } from '../../actions';
+import { PrayerCard } from '../../components/prayer-card';
+import { groupByDate, formatDateLabel } from '../../constants';
 
 export const metadata = { title: '날짜별 | 기도제목 노트' };
 
 export default async function DatePage({ searchParams }) {
     const params = await searchParams;
-    const [prayers, isOwner] = await Promise.all([listPrayersAction(), isOwnerAction()]);
+    const prayers = await listPrayersAction();
     const groups = groupByDate(prayers);
     const selectedDate = params?.date;
     const visibleGroups = selectedDate ? groups.filter(([date]) => date === selectedDate) : groups;
@@ -57,7 +57,7 @@ export default async function DatePage({ searchParams }) {
                         <h3 className="mb-3 text-neutral-300">{formatDateLabel(date)}</h3>
                         <div className="flex flex-col gap-3">
                             {items.map((prayer) => (
-                                <PrayerCard key={prayer.id} prayer={prayer} isOwner={isOwner} />
+                                <PrayerCard key={prayer.id} prayer={prayer} />
                             ))}
                         </div>
                     </section>

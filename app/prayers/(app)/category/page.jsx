@@ -1,19 +1,15 @@
 import { Suspense } from 'react';
-import { listPrayersAction, listCategoriesAction, isOwnerAction } from '../actions';
-import { CategoryFilter } from '../components/category-filter';
-import { AddCategoryForm } from '../components/add-category-form';
-import { PrayerCard } from '../components/prayer-card';
-import { categoryStyle } from '../constants';
+import { listPrayersAction, listCategoriesAction } from '../../actions';
+import { CategoryFilter } from '../../components/category-filter';
+import { AddCategoryForm } from '../../components/add-category-form';
+import { PrayerCard } from '../../components/prayer-card';
+import { categoryStyle } from '../../constants';
 
 export const metadata = { title: '카테고리별 | 기도제목 노트' };
 
 export default async function CategoryPage({ searchParams }) {
     const params = await searchParams;
-    const [prayers, categories, isOwner] = await Promise.all([
-        listPrayersAction(),
-        listCategoriesAction(),
-        isOwnerAction()
-    ]);
+    const [prayers, categories] = await Promise.all([listPrayersAction(), listCategoriesAction()]);
 
     const selected = (params?.category || '').split(',').filter(Boolean);
     const activeCategories = selected.length ? categories.filter((c) => selected.includes(c)) : categories;
@@ -29,7 +25,7 @@ export default async function CategoryPage({ searchParams }) {
                 <CategoryFilter categories={categories} />
             </Suspense>
 
-            {isOwner && <AddCategoryForm />}
+            <AddCategoryForm />
 
             <div className="flex flex-col gap-8">
                 {activeCategories.map((category) => {
@@ -50,7 +46,7 @@ export default async function CategoryPage({ searchParams }) {
                             </div>
                             <div className="flex flex-col gap-3">
                                 {items.map((prayer) => (
-                                    <PrayerCard key={prayer.id} prayer={prayer} isOwner={isOwner} />
+                                    <PrayerCard key={prayer.id} prayer={prayer} />
                                 ))}
                             </div>
                         </section>

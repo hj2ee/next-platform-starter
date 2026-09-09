@@ -4,13 +4,12 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPrayerAction } from '../actions';
 
-export function NewPrayerForm({ categories, authorType, redirectTo }) {
+export function NewPrayerForm({ categories, redirectTo }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [category, setCategory] = useState(categories[0] || '개인');
     const [customCategory, setCustomCategory] = useState('');
     const [content, setContent] = useState('');
-    const [authorName, setAuthorName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
 
@@ -26,12 +25,7 @@ export function NewPrayerForm({ categories, authorType, redirectTo }) {
         }
 
         startTransition(async () => {
-            const res = await createPrayerAction({
-                category: finalCategory,
-                content,
-                authorType,
-                authorName
-            });
+            const res = await createPrayerAction({ category: finalCategory, content });
             if (res.success) {
                 setContent('');
                 setCustomCategory('');
@@ -49,25 +43,16 @@ export function NewPrayerForm({ categories, authorType, redirectTo }) {
 
     return (
         <form onSubmit={submit} className="flex flex-col gap-3">
-            {authorType === 'visitor' && (
-                <input
-                    value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    placeholder="이름 또는 별칭 (선택)"
-                    className="input"
-                />
-            )}
-
             <select value={category} onChange={(e) => setCategory(e.target.value)} className="input">
                 {categories.map((c) => (
                     <option key={c} value={c}>
                         {c}
                     </option>
                 ))}
-                {authorType === 'owner' && <option value="__custom__">+ 새 카테고리 추가</option>}
+                <option value="__custom__">+ 새 카테고리 추가</option>
             </select>
 
-            {authorType === 'owner' && category === '__custom__' && (
+            {category === '__custom__' && (
                 <input
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value)}
